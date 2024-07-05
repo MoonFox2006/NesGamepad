@@ -1,0 +1,48 @@
+; SET pin 0 - latch, 1 - clock
+; IN pin 0 - data
+; 1 us per tick, autopush
+
+.program gamepad_read
+    set pins, 0b00 ; latch and clock low
+.wrap_target
+    pull block
+    set x, 6
+    set pins, 0b01 [11] ; latch high
+    set pins, 0b00 [11] ; latch low
+    in pins, 1
+get_bit:
+    set pins, 0b10 [11] ; clock high
+    set pins, 0b00 [11] ; clock low
+    in pins, 1
+    jmp x-- get_bit
+;    push block
+.wrap
+
+; SET pin 0 - latch, 1 - clock
+; IN pin 0 - data
+; 1 us per tick
+
+.program gamepad_read_auto
+    set pins, 0b00 ; latch and clock low
+;    mov osr, ~null
+;    out y, 8
+    mov y, ~null
+.wrap_target
+read:
+    set x, 6
+    set pins, 0b01 [11] ; latch high
+    set pins, 0b00 [11] ; latch low
+    in pins, 1
+get_bit:
+    set pins, 0b10 [11] ; clock high
+    set pins, 0b00 [11] ; clock low
+    in pins, 1
+    jmp x-- get_bit
+    mov x, isr
+    jmp x!=y changed
+    mov isr, null
+    jmp read
+changed:
+    mov y, x
+    push block
+.wrap
